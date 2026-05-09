@@ -13,6 +13,7 @@
 
 - 新增 `src/common/prompt-loader.ts`，用于创建 agent 时动态读取 `src/prompts/*.md`。
 - 新增 `src/prompts/research.md` 和 `src/prompts/mcp-business-tools.md`，将提示词正文从 TypeScript 中拆出。
+- 启用 deepagents 原生文件系统工具，支持 `ls`、`read_file`、`write_file`、`edit_file`、`glob`、`grep`。
 - 新增 LangChain 领域模块：
   - `src/langchain/model/chat-model.factory.ts`
   - `src/langchain/tools/internet-search.tool.ts`
@@ -31,6 +32,9 @@
 - `LangChainService` 保留 `chat`、`streamChat` 和 agent 编排入口，不再内联模型、提示词、工具和输出解析逻辑。
 - `McpClientService` 保留 MCP 配置判断、工具加载、工具调用和请求入口，不再内联 schema 转换和响应渲染逻辑。
 - 系统提示词改为创建 agent 时动态读取 Markdown，动态日期和 MCP 工具列表在读取后拼接。
+- 当前日期注入改为包含小时分钟的 `当前日期时间`，减少额外自然语言说明。
+- `createDeepAgent` 配置 `FilesystemBackend`，文件系统工具由 deepagents 自动注入，不再作为自定义 tool 注册。
+- 文件系统 backend 默认限制在当前项目目录，并启用 `virtualMode`；可通过 `LOCAL_FILE_ROOT` 指定允许访问的根目录。
 - `.agent/` 成为仓库级 agent 配置源，`.codex/` 和 `.claude/` 使用软链接引用共享配置。
 
 ### 修复内容
@@ -45,6 +49,7 @@
 ### 兼容性与迁移
 
 - 提示词文件需要保留在 `src/prompts/`，或通过 `PROMPTS_DIR` 指向外部提示词目录。
+- deepagents 文件系统工具默认只访问当前项目目录；如需指定其他目录，需要配置 `LOCAL_FILE_ROOT`。
 - `.codex/` 和 `.claude/` 下的内容是指向 `.agent/` 的软链接，跨平台复制仓库时需要保留 symlink。
 
 ### 验证情况

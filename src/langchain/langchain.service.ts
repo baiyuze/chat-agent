@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { createDeepAgent } from "deepagents";
+import { createDeepAgent, FilesystemBackend } from "deepagents";
 import { ChatMessage } from "../chat/chat.types";
 import { McpClientService } from "../mcp/mcp-client.service";
 import { ChatMessageEntity } from "../chat/chat-message.entity";
@@ -9,7 +9,7 @@ import { summarizeToolOutput } from "./events/tool-output.util";
 import { LangChainStreamEvent } from "./langchain.types";
 import { createChatModel } from "./model/chat-model.factory";
 import { loadPrompt } from "../common/prompt-loader";
-import { getTodayText } from "./utils/date.util";
+import { getCurrentDateTimeText } from "./utils/date.util";
 import { createCustomTools } from "./tools/custom-tools.factory";
 import { createInternetSearchTool } from "./tools/internet-search.tool";
 import { compactJson } from "./utils/json.util";
@@ -124,10 +124,12 @@ export class LangChainService {
     return createDeepAgent({
       model: createChatModel(),
       tools: [createInternetSearchTool(), ...mcpTools, ...customTools],
+      backend: new FilesystemBackend({
+        rootDir: process.env.LOCAL_FILE_ROOT ?? process.cwd(),
+        virtualMode: true,
+      }),
       systemPrompt: [
-        "今天是 " +
-          getTodayText() +
-          "。当用户说“今天”“最新”“最近”时，以这个日期作为当前日期。",
+        "当前日期时间：" + getCurrentDateTimeText(),
         "",
         loadPrompt("research.md"),
         mcpToolPromptSection,
